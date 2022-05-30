@@ -35,11 +35,12 @@ function loopDir(dirpath::String, pH::String = "9.2")::DataFrame
             println(file)
             # println(fitTrace(dirpath * file))
             fileAndPath = dirpath * file
-            results = [getAsConcentrationFromFilename(fileAndPath), getInvTau(fileAndPath), pH]
+            concAs = getAsConcentrationFromFilename(fileAndPath)
+            results = [concAs, getInvTau(fileAndPath,concAs), pH]
             println(results)
             push!(df, results)
             # push!(plts, plotTrace(fileAndPath))
-            display(plotTrace(fileAndPath))
+            display(plotTrace(fileAndPath, concAs))
         end
     end
     return df

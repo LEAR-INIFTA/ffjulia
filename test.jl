@@ -5,7 +5,7 @@ using .FitFlashPhotolysisTrace, .LoopDir
 using Plots, StatsPlots, Statistics, DataFrames
 using EasyFit,CSV, LsqFit
 
-fitTrace("NQ D 600 nm 400 us Delta OD KV 1_75 Ar 20 disparos.txt")
+fitTrace("NQ D 600 nm 400 us Delta OD KV 1_75 Ar 20 disparos.txt", 5e-5)
 
 filename = "NQ stock 600 nm 400 us Delta OD KV 1_75 Ar 20 disparos.txt"
 
@@ -16,6 +16,9 @@ split(filename, " ")[2]
 # readdir("FlashPhotolysis/2022_5_13/")
 
 dirpath1 = "FlashPhotolysis/2022_5_13/"
+
+fitTrace(dirpath1 * "NQ Blanco 600 nm 400 us Delta OD KV 1_75 Ar 20 disparos.txt", 0.0)
+
 dirpath2 = "FlashPhotolysis/2022_5_20/"
 
 ph9 = loopDir(dirpath1)
@@ -37,7 +40,10 @@ print(ph10)
 
 df3 = combine(groupby(ph10, :As3), :invTau => mean)
 
-both = "FlashPhotolysis/2022_5_20/NQ C 600 nm 400 us Delta OD KV 1_80 Ar 20 disparos.txt"
+both = "FlashPhotolysis/2022_5_20/NQ Blanco 600 nm 400 us Delta OD KV 1_80 Ar 20 disparos.txt"
+
+println(getExpType(both))
+
 trace = CSV.read(both, DataFrame, 
         header=["time", "OD", "discard"], skipto=1011, drop=["discard"])
 
@@ -46,7 +52,9 @@ trace = trace[1:1000,:]
 mv10 = movavg(trace.OD,10)
 mv100 = movavg(trace.OD,100)
 
-plot(trace.time,[trace.OD,mv10.x, mv100.x])
+# plot(trace.time,[trace.OD,mv10.x, mv100.x])
+plot(trace.time,mv10.x)
+
 
 function model(time,p)
     p[1] .+ p[2]* exp.(-p[3]*time)
@@ -58,15 +66,20 @@ fit = curve_fit(model, trace.time, trace.OD, p0)
 fitmv10 = curve_fit(model, trace.time, mv10.x, p0)
 fitmv100 = curve_fit(model, trace.time, mv100.x, p0)
 
+plot!(trace.time,model(trace.time,fit.param), linewidth=3)
+
+
 function plotFits(trace, fits)
+    plt = plot()
     for fit in fits
         plot!(trace.time,model(trace.time,fit.param), linewidth=3)
     end
+    return plt
     # plot!(trace.time,model(trace.time,fitmv10.param), linewidth=3)
     # plot!(trace.time,model(trace.time,fitmv100.param), linewidth=3)
 end
 
-plotFits(trace, fit, fitmv10, fitmv100)
+plotFits(trace, [fit, fitmv10, fitmv100])
 
 fit.param
 fitmv10.param
