@@ -48,7 +48,7 @@ function plotTrace(filename)
         :time,
         :OD,
         title=getExpType(filename),
-        alpha=0.1
+        alpha=0.2
     )
     plot!(plt,trace.time, model(trace.time, fit), lw=3)
     # plt = plot(trace.time,trace.OD, title=filename)
